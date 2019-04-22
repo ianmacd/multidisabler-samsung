@@ -153,17 +153,19 @@ bl=$(getprop ro.boot.bootloader)
 #
 fw=${bl:$((${#bl} - 4)):4}
 
-# Device is either 4 or 5 characters long, depending on length of bootloader
+# Device is either 3 or 4 characters long, depending on length of bootloader
 # string.
 #
-device=${bl:0:$((${#bl} - 8))}
+device=${bl:0:$((${#bl} - 9))}
+variant=${bl:4:1}
 
-if ! ( [ $device = G975F ] || [ $device = G973F ] || [ $device = G970F ]); then
+if ! ( [ $device = G975 ] || [ $device = G973 ] || [ $device = G970 ] ) ||
+   ! ( [ $variant = F ] || [ $variant = N ] ); then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1
 fi
-ui_print " - Detected a $device device on $fw firmware."
+ui_print " - Detected a $device$variant device on $fw firmware."
 
 ui_print " - Mounting /system..."
 mount /system

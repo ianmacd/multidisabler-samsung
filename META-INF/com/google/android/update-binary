@@ -136,7 +136,7 @@ disable_proca() {
 disable_recovery_restoration() {
   ui_print " - Disabling restoration of stock recovery..."
 
-  mv /system/recovery-from-boot.p /system/recovery-from-boot.p~
+  mv /system/system/recovery-from-boot.p /system/system/recovery-from-boot.p~
 }
 
 ui_print " "

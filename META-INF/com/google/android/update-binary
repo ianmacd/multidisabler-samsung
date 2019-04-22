@@ -1,0 +1,215 @@
+#!/sbin/sh
+#
+# Flashable services disabler for G97[035]F by Ian Macdonald.
+#
+# Use this to prepare your device for rooting with TWRP + Magisk.
+
+ZIPFILE=$3
+OUTFD=$2
+
+scr_wdth=50
+
+# Detect real $OUTFD
+#
+readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null
+if [ $? -eq 0 ]; then
+  OUTFD=0
+  for FD in $( ls /proc/$$/fd ); do
+    readlink /proc/$$/fd/$FD 2>/dev/null | grep pipe >/dev/null
+    if [ $? -eq 0 ]; then
+      ps | grep " 3 $FD " | grep -v grep >/dev/null
+      if [ $? -eq 0 ]; then
+	OUTFD=$FD
+	break
+      fi
+    fi
+  done
+fi
+
+get_key() {
+  local key=$( toolbox getevent -lqc 1  | awk '{ print $(NF-1) }' )
+  [ $key = 02bf ] && key=KEY_BIXBY
+
+  echo $key
+}
+
+q_and_a() {
+  local q=$1
+  shift
+
+  # The strange formatting is to keep ui_print() happy.
+  #
+  local choice="[Vol Up]   = $1\nui_print      [Vol Down] = $2\n"
+  [ -n "$3" ] && choice="[Bixby]    = $3\nui_print      $choice"
+
+  ui_print " "
+  ui_print " - $q"
+  ui_print "     $choice"
+
+  local n=99
+  until [ $n -le $# ]; do
+    unset UP DOWN BIXBY
+    local a=$(get_key)
+
+    case $a in
+      *UP)
+        UP=true
+        n=1
+        ;;
+      *DOWN)
+        DOWN=true
+        n=2
+        ;;
+      *BIXBY)
+        BIXBY=true
+        n=3
+        ;;
+      *)
+	n=99
+        ;;
+    esac
+
+  done
+
+  CHOICE=$(eval echo '$'$n)
+  ui_print "   '$CHOICE' selected."
+}
+
+ui_print() {
+  echo -ne "ui_print $1\n" >> /proc/self/fd/$OUTFD
+  echo -ne "ui_print\n" >> /proc/self/fd/$OUTFD
+}
+
+print_full_bar() {
+  ui_print "$(printf '%*s\n' $scr_wdth | tr ' ' '=')"
+}
+
+print_justified() {
+  local str="$1"
+  local str_len=${#str}
+  local padding_len=$(( ($scr_wdth - $str_len - 2) / 2))
+  local ljust="$(printf '%*s' $padding_len)"
+  local rjust="$(printf '%*s' $(($padding_len + $str_len % 2)))"
+
+  ui_print "=$ljust$str$rjust="
+}
+
+disable_fbe() {
+  ui_print " - Disabling file-based encryption (FBE) for /data..."
+
+  # Option 1: This replaces the offending line.
+  #sed -i -e 's/fileencryption=[^,]*/encryptable/' /vendor/etc/fstab.exynos9820
+
+  # Option 2: This comments out the offending line and adds an edited one.
+  sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' /vendor/etc/fstab.exynos9820
+}
+
+disable_vaultkeeper() {
+  ui_print " - Disabling vaultkeeperd..."
+
+  # sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' /system/init.rc
+  sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
+	 -e '/\/system\/bin\/vaultkeeperd/,/^#\?$/s/^[^#]*$/#&/' /system/init.rc
+
+  # Option 1: Unknown whether it even works.
+  # sed -i -e 's/\(ro\.security\.vaultkeeper\.native=\)1/\10/' /vendor/build.prop
+  #
+  # Option 2: This works and apparently won't spam logcat, but is drastic.
+  # rm /system/system/bin/vaultkeeperd
+  #
+  # Option 3: This works and is and is the least invasive choice.
+  chmod 0 /system/system/bin/vaultkeeperd
+}
+
+disable_proca() {
+  ui_print " - Disabling process authentication..."
+
+  sed -i -e 's/^[^#]/# &/' /vendor/etc/init/pa_daemon.rc
+  
+  # Option 1: Works only if operable XML stanza is not the last in file.
+  #sed -i -e '/<name>vendor\.samsung\.security\.proca<\/name>/,/<hal format="hidl">/d' /vendor/etc/vintf/manifest.xml
+  #
+  # Option 2: This is safer, but more complex.
+  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung\.security\.proca<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+} 
+
+disable_recovery_restoration() {
+  ui_print " - Disabling restoration of stock recovery..."
+
+  mv /system/recovery-from-boot.p /system/recovery-from-boot.p~
+}
+
+ui_print " "
+print_full_bar
+print_justified "G97[035]F multi-disabler"
+print_justified "by Ian Macdonald"
+print_full_bar
+ui_print " "
+
+bl=$(getprop ro.boot.bootloader)
+
+# Firmware version starts at either 8th or 9th character, depending on length
+# of bootloader string (12 or 13).
+#
+fw=${bl:$((${#bl} - 4)):4}
+
+# Device is either 4 or 5 characters long, depending on length of bootloader
+# string.
+#
+device=${bl:0:$((${#bl} - 8))}
+
+if ! ( [ $device = G975F ] || [ $device = G973F ] || [ $device = G970F ]); then
+  ui_print " - Unsupported device detected. Installation aborted."
+  ui_print " "
+  exit 1
+fi
+ui_print " - Detected a $device device on $fw firmware."
+
+ui_print " - Mounting /system..."
+mount /system
+ui_print " - Mounting /vendor..."
+mount /vendor
+
+ZIPNAME=${ZIPFILE##*/}
+
+if [ $ZIPNAME != ${ZIPNAME/_interactive//} ]; then
+  INTERACTIVE=true
+  ui_print " - Interactive installation selected."
+fi
+
+FBE=true
+if [ -n "$INTERACTIVE" ]; then
+  q_and_a 'Disable file-based encryption on /data?' yes no
+  [ -n "$DOWN" ] && unset FBE
+fi
+[ -n "$FBE" ] && disable_fbe
+
+VAULTKEEPER=true
+if [ -n "$INTERACTIVE" ]; then
+  q_and_a 'Disable Vaultkeeper?' yes no
+  [ -n "$DOWN" ] && unset VAULTKEEPER
+fi
+[ -n "$VAULTKEEPER" ] && disable_vaultkeeper
+
+PROCA=true
+if [ -n "$INTERACTIVE" ]; then
+  q_and_a 'Disable process authentication (proca)?' yes no
+  [ -n "$DOWN" ] && unset PROCA
+fi
+[ -n "$PROCA" ] && disable_proca
+
+STOCKREC=true
+if [ -n "$INTERACTIVE" ]; then
+  q_and_a 'Disable automatic restoration of stock recovery?' yes no
+  [ -n "$DOWN" ] && unset STOCKREC
+fi
+[ -n "$STOCKREC" ] && disable_recovery_restoration
+
+ui_print " - Unmounting /vendor..."
+umount /vendor
+ui_print " - Unmounting /system..."
+umount /system
+
+ui_print " "
+ui_print " - Finished."
+ui_print " "

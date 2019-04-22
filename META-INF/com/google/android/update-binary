@@ -141,7 +141,7 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "G97[035]F multi-disabler"
+print_justified "G97[035]F multi-disabler v1.1"
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "

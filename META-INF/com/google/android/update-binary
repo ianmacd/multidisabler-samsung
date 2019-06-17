@@ -107,7 +107,6 @@ disable_fbe() {
 disable_vaultkeeper() {
   ui_print " - Disabling vaultkeeperd..."
 
-  # sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' /system/init.rc
   sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
 	 -e '/\/system\/bin\/vaultkeeperd/,/^#\?$/s/^[^#]*$/#&/' /system/init.rc
 
@@ -124,7 +123,10 @@ disable_vaultkeeper() {
 disable_proca() {
   ui_print " - Disabling process authentication..."
 
-  sed -i -e 's/^[^#]/# &/' /vendor/etc/init/pa_daemon.rc
+  for i in /vendor/etc/init/pa_daemon.rc \
+	   /vendor/etc/init/pa_daemon_teegris.rc; do
+    [ -f $i ] && sed -i -e 's/^[^#]/# &/' $i
+  done
   
   # Option 1: Works only if operable XML stanza is not the last in file.
   #sed -i -e '/<name>vendor\.samsung\.security\.proca<\/name>/,/<hal format="hidl">/d' /vendor/etc/vintf/manifest.xml
@@ -141,7 +143,7 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "G97[035]F multi-disabler v1.1"
+print_justified "G97[035]F multi-disabler v1.2"
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -153,19 +155,16 @@ bl=$(getprop ro.boot.bootloader)
 #
 fw=${bl:$((${#bl} - 4)):4}
 
-# Device is either 3 or 4 characters long, depending on length of bootloader
-# string.
+# Device is first 5 characters of bootloader string.
 #
-device=${bl:0:$((${#bl} - 9))}
-variant=${bl:4:1}
+device=${bl:0:$((${#bl} - 8))}
 
-if ! ( [ $device = G975 ] || [ $device = G973 ] || [ $device = G970 ] ) ||
-   ! ( [ $variant = F ] || [ $variant = N ] ); then
+if echo $device | grep -Ev 'G97([035][FN]|7B)' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1
 fi
-ui_print " - Detected a $device$variant device on $fw firmware."
+ui_print " - Detected a $device device on $fw firmware."
 
 ui_print " - Mounting /system..."
 mount /system

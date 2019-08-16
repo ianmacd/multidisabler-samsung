@@ -97,11 +97,16 @@ print_justified() {
 disable_fbe() {
   ui_print " - Disabling file-based encryption (FBE) for /data..."
 
-  # Option 1: This replaces the offending line.
-  #sed -i -e 's/fileencryption=[^,]*/encryptable/' /vendor/etc/fstab.exynos9820
+  # S10 range = fstab.exynos9820.
+  # Note 10 range = fstab.exynos9825.
+  #
+  for i in /vendor/etc/fstab.exynos982*; do
+    # Option 1: This replaces the offending line.
+    #sed -i -e 's/fileencryption=[^,]*/encryptable/' $i
 
-  # Option 2: This comments out the offending line and adds an edited one.
-  sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' /vendor/etc/fstab.exynos9820
+    # Option 2: This comments out the offending line and adds an edited one.
+    sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+  done
 }
 
 disable_vaultkeeper() {
@@ -123,17 +128,19 @@ disable_vaultkeeper() {
 disable_proca() {
   ui_print " - Disabling process authentication..."
 
-  for i in /vendor/etc/init/pa_daemon.rc \
-	   /vendor/etc/init/pa_daemon_teegris.rc; do
+  # G97[035]F = pa_daemon.rc
+  # G977B + N97[05]F = pa_daemon_teegris.rc
+  #
+  for i in /vendor/etc/init/pa_daemon*.rc; do
     [ -f $i ] && sed -i -e 's/^[^#]/# &/' $i
   done
-  
+
   # Option 1: Works only if operable XML stanza is not the last in file.
   #sed -i -e '/<name>vendor\.samsung\.security\.proca<\/name>/,/<hal format="hidl">/d' /vendor/etc/vintf/manifest.xml
   #
   # Option 2: This is safer, but more complex.
   sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung\.security\.proca<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
-} 
+}
 
 disable_recovery_restoration() {
   ui_print " - Disabling restoration of stock recovery..."
@@ -143,7 +150,7 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "G97[035]F multi-disabler v1.2"
+print_justified "Multi-disabler v1.3 for G97[035][FN], G977B and N97[05][FN]"
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -159,7 +166,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN]|7B)' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN]|7B)|N97[05][FN]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

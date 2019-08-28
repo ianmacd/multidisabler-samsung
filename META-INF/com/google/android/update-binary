@@ -114,7 +114,7 @@ disable_vaultkeeper() {
   ui_print " - Disabling vaultkeeperd..."
 
   sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
-	 -e '/\/system\/bin\/vaultkeeperd/,/^#\?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+	 -re '/\/system\/bin\/vaultkeeperd/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
 
   # Option 1: Unknown whether it even works.
   # sed -i -e 's/\(ro\.security\.vaultkeeper\.native=\)1/\10/' /vendor/build.prop
@@ -151,8 +151,8 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v1.3 for"
-print_justified "G97[035][FN], G977B and N97[05][FN]"
+print_justified "Multi-disabler v1.4 for"
+print_justified "G97[035][FN], G977B and N97[056][FN]"
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -168,7 +168,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN]|7B)|N97[05][FN]' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN]|7B)|N97[056][FN]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

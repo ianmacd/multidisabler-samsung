@@ -1,7 +1,7 @@
 #!/sbin/sh
 #
 # Flashable services disabler for G97[035][FN], G977B and N97[05][FN],
-# A[124]05[FN], A105M, A205[YG]N and A405FM.
+# A[124]05[FN], A105M, A205[YG]N and A405FM, T51[05].
 # by Ian Macdonald.
 #
 # Use this to prepare your device for rooting with TWRP + Magisk.
@@ -102,6 +102,7 @@ disable_fbe() {
   # S10 range = fstab.exynos9820.
   # Note 10 range = fstab.exynos9825.
   # A[124]0 range = fstab.exynos7885.
+  # Tab A 10.1 range = fstab.exynos7885.
   #
   for i in /vendor/etc/fstab.exynos[0-9][0-9][0-9][0-9]; do
     # Option 1: This replaces the offending line.
@@ -133,6 +134,7 @@ disable_proca() {
 
   # G97[035]F = pa_daemon.rc
   # G977B, N97[05]F, A105F = pa_daemon_teegris.rc
+  # T510 + T515 = pa_daemon_kinibi.rc
   #
   for i in /vendor/etc/init/pa_daemon*.rc; do
     [ -f $i ] && sed -i -e 's/^[^#]/# &/' $i
@@ -155,7 +157,7 @@ ui_print " "
 print_full_bar
 print_justified "Multi-disabler v1.5 for"
 print_justified "G97[035][FN], G977B, N97[05][FN] & N976B,"
-print_justified "A[124]05[FN], A105M, A205[YG]N & A405FM"
+print_justified "A[124]05[FN], A105M, A205[YG]N, A405FM & T51[05]."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -171,7 +173,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([124]05[FN]|105M|205[YG]N|405FM)' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([124]05[FN]|105M|205[YG]N|405FM)|T51[05]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

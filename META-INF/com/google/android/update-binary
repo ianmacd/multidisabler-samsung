@@ -14,14 +14,11 @@ scr_wdth=50
 
 # Detect real $OUTFD
 #
-readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null
-if [ $? -eq 0 ]; then
+if readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null; then
   OUTFD=0
   for FD in $( ls /proc/$$/fd ); do
-    readlink /proc/$$/fd/$FD 2>/dev/null | grep pipe >/dev/null
-    if [ $? -eq 0 ]; then
-      ps | grep " 3 $FD " | grep -v grep >/dev/null
-      if [ $? -eq 0 ]; then
+    if readlink /proc/$$/fd/$FD 2>/dev/null | grep pipe >/dev/null; then
+      if ps | grep " 3 $FD " | grep -v grep >/dev/null; then
 	OUTFD=$FD
 	break
       fi
@@ -159,7 +156,8 @@ ui_print " "
 print_full_bar
 print_justified "Multi-disabler v1.5 for"
 print_justified "G97[035][FN], G977B, N97[05][FN] & N976B,"
-print_justified "A[1245]05[FN], A105M, A205[YG]N, A405FM & T51[05]."
+print_justified "A[1245]05[FN], A105M, A205[YG]N, A405FM"
+print_justified "& T51[05]."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "

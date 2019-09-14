@@ -156,7 +156,7 @@ ui_print " "
 print_full_bar
 print_justified "Multi-disabler v1.5 for"
 print_justified "G97[035][FN], G977B, N97[05][FN] & N976B,"
-print_justified "A[1245]05[FN], A105M, A205[YG]N, A405FM"
+print_justified "A[1245]05[FN], A105M, A205G, A205[YG]N, A405FM"
 print_justified "& T51[05]."
 print_justified "by Ian Macdonald"
 print_full_bar
@@ -173,7 +173,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([1245]05[FN]|105M|205[YG]N|405FM)|T51[05]' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([1245]05[FN]|105M|205([YG]N|G)|405FM)|T51[05]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

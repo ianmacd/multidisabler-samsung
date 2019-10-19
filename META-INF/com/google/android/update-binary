@@ -1,7 +1,7 @@
 #!/sbin/sh
 #
 # Flashable services disabler for G97[035][FN], G977B and N97[05][FN],
-# A[1245]05[FN], A105M, A[25]05([YG]N|G) and A405FM, T51[05].
+# A[1245]05[FN], A105M, A[25]05([YG]N|G), A405FM, T51[05] and T86[05].
 #
 # by Ian Macdonald.
 #
@@ -103,7 +103,8 @@ disable_fbe() {
   # A50 = fstab.exynos9610.
   # Tab A 10.1 range = fstab.exynos7885.
   #
-  for i in /vendor/etc/fstab.exynos[0-9][0-9][0-9][0-9]; do
+  for i in /vendor/etc/fstab.exynos[0-9][0-9][0-9][0-9] \
+	   /vendor/etc/fstab.qcom; do
     # Option 1: This replaces the offending line.
     #sed -i -e 's/fileencryption=[^,]*/encryptable/' $i
 
@@ -117,6 +118,11 @@ disable_vaultkeeper() {
 
   sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
 	 -re '/\/system\/bin\/vaultkeeperd/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+
+  # Qualcomm devices such as the T860 and T865 need this, otherwise the log
+  # will be spammed with messages about failed connections to the Vaultkeeper
+  # service.
+  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung\.security\.vaultkeeper_server<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
 
   # Option 1: Unknown whether it even works.
   # sed -i -e 's/\(ro\.security\.vaultkeeper\.native=\)1/\10/' /vendor/build.prop
@@ -134,6 +140,7 @@ disable_proca() {
   # G97[035]F = pa_daemon.rc
   # G977B, N97[05]F, A105F, A505F = pa_daemon_teegris.rc
   # T510 + T515 = pa_daemon_kinibi.rc
+  # T860 + T865 = pa_daemon_qsee.rc
   #
   for i in /vendor/etc/init/pa_daemon*.rc; do
     [ -f $i ] && sed -i -e 's/^[^#]/# &/' $i
@@ -154,10 +161,10 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v1.6 for"
+print_justified "Multi-disabler v1.7 for"
 print_justified "G97[035][FN], G977B, N97[05][FN] & N976B,"
 print_justified "A[1245]05[FN], A105M, A[25]05G, A[25]05[YG]N,"
-print_justified "A405FM and T51[05]."
+print_justified "A405FM, T51[05] and T86[05]."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -173,7 +180,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T51[05]' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(51|86)[05]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

@@ -1,7 +1,8 @@
 #!/sbin/sh
 #
 # Flashable services disabler for G97[035][FN0], G977[BN] and N97[05][FN0],
-# N976[BN0], A[1245]05[FN], A105M, A[25]05([YG]N|G), A405FM, T51[05] and T86[05].
+# N976[BN0], A[1245]05[FN], A105M, A[25]05([YG]N|G), A405FM, T51[05], T86[05],
+# F900[FN] and F907[BN].
 #
 # by Ian Macdonald.
 #
@@ -164,7 +165,7 @@ print_full_bar
 print_justified "Multi-disabler v1.7 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0], N976[BN0],"
 print_justified "A[1245]05[FN], A105M, A[25]05G, A[25]05[YG]N,"
-print_justified "A405FM, T51[05] and T86[05]."
+print_justified "A405FM, T51[05], T86[05], F900[FN] and F907[BN]."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -180,7 +181,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0])|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(51|86)[05]' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0])|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(51|86)[05]|F90(0[FN]|7[BN])' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

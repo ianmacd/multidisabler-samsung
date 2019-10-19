@@ -1,6 +1,6 @@
 #!/sbin/sh
 #
-# Flashable services disabler for G97[035][FN], G977B and N97[05][FN],
+# Flashable services disabler for G97[035][FN0], G977B and N97[05][FN0],
 # A[1245]05[FN], A105M, A[25]05([YG]N|G), A405FM, T51[05] and T86[05].
 #
 # by Ian Macdonald.
@@ -162,7 +162,7 @@ disable_recovery_restoration() {
 ui_print " "
 print_full_bar
 print_justified "Multi-disabler v1.7 for"
-print_justified "G97[035][FN], G977B, N97[05][FN] & N976B,"
+print_justified "G97[035][FN0], G977B, N97[05][FN0] & N976B,"
 print_justified "A[1245]05[FN], A105M, A[25]05G, A[25]05[YG]N,"
 print_justified "A405FM, T51[05] and T86[05]."
 print_justified "by Ian Macdonald"
@@ -180,7 +180,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN]|7B)|N97([05][FN]|6B)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(51|86)[05]' >/dev/null; then
+if echo $device | grep -Ev 'G97([035][FN0]|7B)|N97([05][FN0]|6B)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(51|86)[05]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

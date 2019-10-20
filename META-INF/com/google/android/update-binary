@@ -135,6 +135,17 @@ disable_vaultkeeper() {
   chmod 0 $ANDROID_ROOT/system/bin/vaultkeeperd
 }
 
+disable_cass() {
+  # The T860 needs this. Otherwise, the log will fill with messages like this:
+  #
+  # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect(4)
+  # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect ril daemon(2). Retry cnt(6)
+
+  ui_print " - Disabling cass..."
+
+  sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/system\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+}
+
 disable_proca() {
   ui_print " - Disabling process authentication..."
 
@@ -213,6 +224,8 @@ if [ -n "$INTERACTIVE" ]; then
   [ -n "$DOWN" ] && unset VAULTKEEPER
 fi
 [ -n "$VAULTKEEPER" ] && disable_vaultkeeper
+
+[ $device = T860 ] && disable_cass
 
 PROCA=true
 if [ -n "$INTERACTIVE" ]; then

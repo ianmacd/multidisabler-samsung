@@ -183,7 +183,7 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v1.7 for"
+print_justified "Multi-disabler v2.0 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N976[BN0], A[1245]05[FN], A105M, A[25]05G,"
 print_justified "A[1245]05[FN], A105M, A[25]05G,"

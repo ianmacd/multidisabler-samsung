@@ -117,8 +117,16 @@ disable_fbe() {
 disable_vaultkeeper() {
   ui_print " - Disabling vaultkeeperd..."
 
-  sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
-	 -re '/\/system\/bin\/vaultkeeperd/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+  if [ -f $ANDROID_ROOT/system/etc/init/vk*.rc ]; then
+    # This is Android 10: Vaultkeeper has its own init file.
+    #
+    sed -i -e 's/^[^#].*$/# &/' $ANDROID_ROOT/system/etc/init/vk*.rc
+  else
+    # This is Android 9: Vaultkeeper is started from init.rc.
+    #
+    sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
+	-re '/\/system\/bin\/vaultkeeperd/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+  fi
 
   # Qualcomm devices such as the T860 and T865 need this, otherwise the log
   # will be spammed with messages about failed connections to the Vaultkeeper
@@ -132,7 +140,9 @@ disable_vaultkeeper() {
   # rm $ANDROID_ROOT/system/bin/vaultkeeperd
   #
   # Option 3: This works and is and is the least invasive choice.
-  chmod 0 $ANDROID_ROOT/system/bin/vaultkeeperd
+  for i in $ANDROID_ROOT/system /vendor; do
+    [ -f $i/bin/vaultkeeperd ] && chmod 0 $i/bin/vaultkeeperd
+  done
 }
 
 disable_cass() {
@@ -149,7 +159,7 @@ disable_cass() {
 disable_proca() {
   ui_print " - Disabling process authentication..."
 
-  # G97[035]F = pa_daemon.rc
+  # G97[035]F = pa_daemon.rc on Android 9; pa_daemon_teegris.rc on Android 10.
   # G977B, N97[05]F, A105F, A505F = pa_daemon_teegris.rc
   # T510 + T515 = pa_daemon_kinibi.rc
   # T860 + T865 = pa_daemon_qsee.rc

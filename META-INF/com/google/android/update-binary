@@ -131,7 +131,11 @@ disable_vaultkeeper() {
   # Qualcomm devices such as the T860 and T865 need this, otherwise the log
   # will be spammed with messages about failed connections to the Vaultkeeper
   # service.
-  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung\.security\.vaultkeeper_server<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+
+  # Package path is different on Android 10. Check and adapt.
+  #
+  [ $major -eq 10 ] && path_extra='\.hardware'
+  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.vaultkeeper[^<]*<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
 
   # Option 1: Unknown whether it even works.
   # sed -i -e 's/\(ro\.security\.vaultkeeper\.native=\)1/\10/' /vendor/build.prop
@@ -172,7 +176,11 @@ disable_proca() {
   #sed -i -e '/<name>vendor\.samsung\.security\.proca<\/name>/,/<hal format="hidl">/d' /vendor/etc/vintf/manifest.xml
   #
   # Option 2: This is safer, but more complex.
-  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung\.security\.proca<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+
+  # Package path is different on Android 10. Check and adapt.
+  #
+  [ $major -eq 10 ] && path_extra='\.hardware'
+  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.proca<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
 }
 
 disable_recovery_restoration() {
@@ -183,7 +191,7 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.0 for"
+print_justified "Multi-disabler v2.1 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -193,6 +201,8 @@ print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
 
+os=$(getprop ro.build.version.release)
+major=${os%%.*}
 bl=$(getprop ro.boot.bootloader)
 
 # Firmware version starts at either 8th or 9th character, depending on length

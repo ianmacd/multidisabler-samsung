@@ -27,55 +27,6 @@ if readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null; then
   done
 fi
 
-get_key() {
-  local key=$( toolbox getevent -lqc 1  | awk '{ print $(NF-1) }' )
-  [ $key = 02bf ] && key=KEY_BIXBY
-
-  echo $key
-}
-
-q_and_a() {
-  local q=$1
-  shift
-
-  # The strange formatting is to keep ui_print() happy.
-  #
-  local choice="[Vol Up]   = $1\nui_print      [Vol Down] = $2\n"
-  [ -n "$3" ] && choice="[Bixby]    = $3\nui_print      $choice"
-
-  ui_print " "
-  ui_print " - $q"
-  ui_print "     $choice"
-
-  local n=99
-  until [ $n -le $# ]; do
-    unset UP DOWN BIXBY
-    local a=$(get_key)
-
-    case $a in
-      *UP)
-        UP=true
-        n=1
-        ;;
-      *DOWN)
-        DOWN=true
-        n=2
-        ;;
-      *BIXBY)
-        BIXBY=true
-        n=3
-        ;;
-      *)
-	n=99
-        ;;
-    esac
-
-  done
-
-  CHOICE=$(eval echo '$'$n)
-  ui_print "   '$CHOICE' selected."
-}
-
 ui_print() {
   echo -ne "ui_print $1\n" >> /proc/self/fd/$OUTFD
   echo -ne "ui_print\n" >> /proc/self/fd/$OUTFD
@@ -233,44 +184,12 @@ mount $ANDROID_ROOT
 ui_print " - Mounting /vendor..."
 mount /vendor
 
-ZIPNAME=${ZIPFILE##*/}
-
-if [ $ZIPNAME != ${ZIPNAME/_interactive//} ]; then
-  INTERACTIVE=true
-  ui_print " - Interactive installation selected."
-fi
-
-FBE=true
-if [ -n "$INTERACTIVE" ]; then
-  q_and_a 'Disable file-based encryption on /data?' yes no
-  [ -n "$DOWN" ] && unset FBE
-fi
-[ -n "$FBE" ] && disable_fbe
-
-VAULTKEEPER=true
-if [ -n "$INTERACTIVE" ]; then
-  q_and_a 'Disable Vaultkeeper?' yes no
-  [ -n "$DOWN" ] && unset VAULTKEEPER
-fi
-[ -n "$VAULTKEEPER" ] && disable_vaultkeeper
-
+disable_fbe
+disable_vaultkeeper
+disable_proca
+disable_recovery_restoration
+[ $major -eq 10 ] && disable_wsm
 [ $device = T860 ] && disable_cass
-
-PROCA=true
-if [ -n "$INTERACTIVE" ]; then
-  q_and_a 'Disable process authentication (proca)?' yes no
-  [ -n "$DOWN" ] && unset PROCA
-fi
-[ -n "$PROCA" ] && disable_proca
-
-disable_wsm
-
-STOCKREC=true
-if [ -n "$INTERACTIVE" ]; then
-  q_and_a 'Disable automatic restoration of stock recovery?' yes no
-  [ -n "$DOWN" ] && unset STOCKREC
-fi
-[ -n "$STOCKREC" ] && disable_recovery_restoration
 
 ui_print " - Unmounting /vendor..."
 umount /vendor

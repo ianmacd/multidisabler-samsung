@@ -95,6 +95,15 @@ print_justified() {
   ui_print "=$ljust$str$rjust="
 }
 
+rm_from_manifest() {
+  local service=$1
+
+  # Package path is different on Android 10. Check and adapt.
+  #
+  [ $major -eq 10 ] && local path_extra='\.hardware'
+  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+}
+
 disable_fbe() {
   ui_print " - Disabling file-based encryption (FBE) for /data..."
 
@@ -132,10 +141,7 @@ disable_vaultkeeper() {
   # will be spammed with messages about failed connections to the Vaultkeeper
   # service.
 
-  # Package path is different on Android 10. Check and adapt.
-  #
-  [ $major -eq 10 ] && path_extra='\.hardware'
-  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.vaultkeeper[^<]*<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+  rm_from_manifest vaultkeeper
 
   # Option 1: Unknown whether it even works.
   # sed -i -e 's/\(ro\.security\.vaultkeeper\.native=\)1/\10/' /vendor/build.prop
@@ -179,8 +185,11 @@ disable_proca() {
 
   # Package path is different on Android 10. Check and adapt.
   #
-  [ $major -eq 10 ] && path_extra='\.hardware'
-  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.proca<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+  rm_from_manifest proca
+}
+
+disable_wsm() {
+  rm_from_manifest wsm
 }
 
 disable_recovery_restoration() {
@@ -191,7 +200,7 @@ disable_recovery_restoration() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.1 for"
+print_justified "Multi-disabler v2.2a1 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -255,6 +264,8 @@ if [ -n "$INTERACTIVE" ]; then
   [ -n "$DOWN" ] && unset PROCA
 fi
 [ -n "$PROCA" ] && disable_proca
+
+disable_wsm
 
 STOCKREC=true
 if [ -n "$INTERACTIVE" ]; then

@@ -174,9 +174,7 @@ disable_proca() {
   # T510 + T515 = pa_daemon_kinibi.rc
   # T860 + T865 = pa_daemon_qsee.rc
   #
-  for i in /vendor/etc/init/pa_daemon*.rc; do
-    [ -f $i ] && sed -i -e 's/^[^#]/# &/' $i
-  done
+  sed -i -e 's/^[^#]/# &/' /vendor/etc/init/pa_daemon*.rc
 
   # Option 1: Works only if operable XML stanza is not the last in file.
   #sed -i -e '/<name>vendor\.samsung\.security\.proca<\/name>/,/<hal format="hidl">/d' /vendor/etc/vintf/manifest.xml

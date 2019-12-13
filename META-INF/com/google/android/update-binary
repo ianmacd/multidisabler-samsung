@@ -9,6 +9,7 @@
 # Use this to prime your device after installing TWRP.
 
 ZIPFILE=$3
+ZIPNAME=${ZIPFILE##*/}
 OUTFD=$2
 
 scr_wdth=50
@@ -138,6 +139,7 @@ disable_proca() {
 }
 
 disable_wsm() {
+  ui_print " - Disabling wsm..."
   rm_from_manifest wsm
 }
 
@@ -147,9 +149,32 @@ disable_recovery_restoration() {
   mv $ANDROID_ROOT/system/recovery-from-boot.p $ANDROID_ROOT/system/recovery-from-boot.p~
 }
 
+patch_libbluetooth() {
+  [ $major -ne 10 ] && return
+
+  local f=$ANDROID_ROOT/system/lib64/libbluetooth.so
+  local tf=/tmp/f
+
+  ui_print " - Bluetooth fix requested via renamed zip."
+  ui_print " - Attempting to patch $f..."
+
+  xxd -p $f | tr -d '\n ' |
+    sed -e 's/c8000034f4031f2af3031f2ae8030032/c8000035f4031f2af3031f2ae8031f2a/' |
+    xxd -rp > $tf
+
+  if ! cmp $tf $f >/dev/null; then
+    ui_print " - Patching succeeded."
+    touch -r $f $tf
+    mv $tf $f
+  else
+    ui_print " - Patching failed. No change made."
+    rm -f $tf
+  fi
+}
+
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.2a1 for"
+print_justified "Multi-disabler v2.2 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -190,6 +215,7 @@ disable_proca
 disable_recovery_restoration
 [ $major -eq 10 ] && disable_wsm
 [ $device = T860 ] && disable_cass
+[ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 
 ui_print " - Unmounting /vendor..."
 umount /vendor

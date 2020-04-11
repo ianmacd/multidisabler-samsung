@@ -53,7 +53,8 @@ rm_from_manifest() {
   # Package path is different on Android 10. Check and adapt.
   #
   [ $major -eq 10 ] && local path_extra='\.hardware'
-  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml
+
+  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml
 }
 
 disable_fbe() {
@@ -78,10 +79,12 @@ disable_fbe() {
 disable_vaultkeeper() {
   ui_print " - Disabling vaultkeeperd..."
 
-  if [ -f $ANDROID_ROOT/system/etc/init/vk*.rc ]; then
-    # This is Android 10: Vaultkeeper has its own init file.
+  if [ $major -eq 10 ]; then
+    # This is Android 10: Vaultkeeper has its own init files.
     #
-    sed -i -e 's/^[^#].*$/# &/' $ANDROID_ROOT/system/etc/init/vk*.rc
+    for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc; do
+      [ -f $i ] && sed -i -e 's/^[^#].*$/# &/' $i
+    done
   else
     # This is Android 9: Vaultkeeper is started from init.rc.
     #
@@ -92,7 +95,7 @@ disable_vaultkeeper() {
   # Qualcomm devices such as the T860 and T865 need this, otherwise the log
   # will be spammed with messages about failed connections to the Vaultkeeper
   # service.
-
+  #
   rm_from_manifest vaultkeeper
 
   # Option 1: Unknown whether it even works.
@@ -112,10 +115,16 @@ disable_cass() {
   #
   # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect(4)
   # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect ril daemon(2). Retry cnt(6)
-
+  #
+  # The F907B on Android 10 also needs it:
+  #
+  # 04-05 22:21:23.519  3599  3599 E CASS_DEBUG: VaultKeeper is not ready. try again.
+  # 04-05 22:21:23.519  3599  3599 I CASS_DEBUG: Disconnect ril daemon
+  # 04-05 22:21:23.519  3599  3599 I CASS_DEBUG: Failed to connect ril daemon(1). Retry cnt(2)
+  #
   ui_print " - Disabling cass..."
 
-  sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/system\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+  sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/(system|vendor)\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
 }
 
 disable_proca() {
@@ -158,11 +167,16 @@ patch_libbluetooth() {
   ui_print " - Bluetooth fix requested via renamed zip."
   ui_print " - Attempting to patch $f..."
 
-  xxd -p $f | tr -d '\n ' |
-    sed -e 's/c8000034f4031f2af3031f2ae8030032/c8000035f4031f2af3031f2ae8031f2a/' |
-    xxd -rp > $tf
+  if echo $device | grep -E '[GN]9[67][0356]0|F90(0[FN]|7[BN])|T86[05]' >/dev/null; then
+    # Snapdragon based devices, such as Tab S6, Fold (5G) and Chinese S9/10/N9/10.
+    substitute='s/88000054691180522925c81a69000037e0030032/04000014691180522925c81a69000037e0031f2a/'
+  else
+    substitute='s/c8000034f4031f2af3031f2ae8030032/1f2003d5f4031f2af3031f2ae8031f2a/'
+  fi
 
-  if ! cmp $tf $f >/dev/null; then
+  xxd -p $f | tr -d '\n ' | sed -e $substitute | xxd -rp > $tf
+
+  if ! cmp $tf $f >/dev/null && [ $(stat -c '%s' $tf) -eq $(stat -c '%s' $f) ]; then
     ui_print " - Patching succeeded."
     touch -r $f $tf
     mv $tf $f
@@ -174,7 +188,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.2 for"
+print_justified "Multi-disabler v2.3 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -214,7 +228,7 @@ disable_vaultkeeper
 disable_proca
 disable_recovery_restoration
 [ $major -eq 10 ] && disable_wsm
-[ $device = T860 ] && disable_cass
+echo $device | grep -E 'T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
 [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 
 ui_print " - Unmounting /vendor..."

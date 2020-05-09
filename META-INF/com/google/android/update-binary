@@ -179,6 +179,7 @@ patch_libbluetooth() {
   if ! cmp $tf $f >/dev/null && [ $(stat -c '%s' $tf) -eq $(stat -c '%s' $f) ]; then
     ui_print " - Patching succeeded."
     touch -r $f $tf
+    chmod 644 $tf
     mv $tf $f
   else
     ui_print " - Patching failed. No change made."

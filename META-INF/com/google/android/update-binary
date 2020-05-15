@@ -60,14 +60,15 @@ rm_from_manifest() {
 disable_fbe() {
   ui_print " - Disabling file-based encryption (FBE) for /data..."
 
+  # S20 range = fstab.exynos990.
   # S10 range = fstab.exynos9820.
   # Note 10 range = fstab.exynos9825.
   # A[124]0 range = fstab.exynos7885.
   # A50 = fstab.exynos9610.
   # Tab A 10.1 range = fstab.exynos7885.
   #
-  for i in /vendor/etc/fstab.exynos[0-9][0-9][0-9][0-9] \
-	   /vendor/etc/fstab.qcom; do
+  for i in /vendor/etc/fstab.exynos* \
+	   /vendor/etc/fstab.qcom*; do
     # Option 1: This replaces the offending line.
     #sed -i -e 's/fileencryption=[^,]*/encryptable/' $i
 
@@ -192,6 +193,7 @@ patch_libbluetooth() {
 ui_print " "
 print_full_bar
 print_justified "Multi-disabler v2.3 for"
+print_justified "G98[05]F, G98[168][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -214,7 +216,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(5[19]|72|86)[05]|F90(0[FN]|7[BN])' >/dev/null; then
+if echo $device | grep -Ev 'G98([05]F|[168][BN0])|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(5[19]|72|86)[05]|F90(0[FN]|7[BN])' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

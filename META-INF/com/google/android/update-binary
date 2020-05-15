@@ -166,6 +166,8 @@ patch_libbluetooth() {
 
   ui_print " - Bluetooth fix requested via renamed zip."
   ui_print " - Attempting to patch $f..."
+  ui_print " - Attempting to patch $f..."
+  ui_print "     This may take a while."
 
   if echo $device | grep -E '[GN]9[67][0356]0|F90(0[FN]|7[BN])|T86[05]' >/dev/null; then
     # Snapdragon based devices, such as Tab S6, Fold (5G) and Chinese S9/10/N9/10.
@@ -191,7 +193,7 @@ ui_print " "
 print_full_bar
 print_justified "Multi-disabler v2.3 for"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
-print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,,"
+print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
 print_justified "A[25]05[YG]N, A405FM, T51[05], T59[05],"
 print_justified "T72[05], T86[05], F900[FN] and F907[BN]."

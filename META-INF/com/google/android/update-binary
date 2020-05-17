@@ -233,7 +233,7 @@ disable_vaultkeeper
 disable_proca
 disable_recovery_restoration
 [ $major -eq 10 ] && disable_wsm
-echo $device | grep -E 'T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
+echo $device | grep -E 'G98([05]F|[168][BN0])|T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
 [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 
 ui_print " - Unmounting /vendor..."

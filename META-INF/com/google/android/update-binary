@@ -69,11 +69,8 @@ disable_fbe() {
   #
   for i in /vendor/etc/fstab.exynos* \
 	   /vendor/etc/fstab.qcom*; do
-    # Option 1: This replaces the offending line.
-    #sed -i -e 's/fileencryption=[^,]*/encryptable/' $i
-
-    # Option 2: This comments out the offending line and adds an edited one.
-    sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+    # This comments out the offending line and adds an edited one.
+    sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g'
   done
 }
 

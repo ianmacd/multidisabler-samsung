@@ -70,7 +70,7 @@ disable_fbe() {
   for i in /vendor/etc/fstab.exynos* \
 	   /vendor/etc/fstab.qcom*; do
     # This comments out the offending line and adds an edited one.
-    sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g'
+    sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
   done
 }
 
@@ -190,6 +190,7 @@ ui_print " "
 print_full_bar
 print_justified "Multi-disabler v2.3 for"
 print_justified "G98[05]F, G98[168][BN0],"
+print_justified "N98[05]F, G98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -212,7 +213,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G98([05]F|[168][BN0])|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(5[19]|72|86)[05]|F90(0[FN]|7[BN])' >/dev/null; then
+if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM)|T(5[19]|72|86)[05]|F90(0[FN]|7[BN])' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1
@@ -226,11 +227,14 @@ mount /vendor
 
 disable_fbe
 disable_vaultkeeper
-disable_proca
 disable_recovery_restoration
-[ $major -eq 10 ] && disable_wsm
-echo $device | grep -E 'G98([05]F|[168][BN0])|T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
-[ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
+
+if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])' >/dev/null; then
+  disable_proca
+  [ $major -eq 10 ] && disable_wsm
+  echo $device | grep -E 'T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
+  [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
+fi
 
 ui_print " - Unmounting /vendor..."
 umount /vendor

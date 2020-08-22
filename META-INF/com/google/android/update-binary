@@ -83,7 +83,7 @@ disable_vaultkeeper() {
   if [ $major -eq 10 ]; then
     # This is Android 10: Vaultkeeper has its own init files.
     #
-    for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc; do
+    for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc /vendor/etc/init/vaultkeeper*; do
       [ -f $i ] && sed -i -e 's/^[^#].*$/# &/' $i
     done
   else
@@ -166,7 +166,6 @@ patch_libbluetooth() {
   local tf=/tmp/f
 
   ui_print " - Bluetooth fix requested via renamed zip."
-  ui_print " - Attempting to patch $f..."
   ui_print " - Attempting to patch $f..."
   ui_print "     This may take a while."
 

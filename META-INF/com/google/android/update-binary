@@ -222,6 +222,7 @@ ui_print " - Detected a $device device on $fw firmware."
 
 ui_print " - Mounting $ANDROID_ROOT..."
 mount $ANDROID_ROOT
+mount -o remount,rw $ANDROID_ROOT
 ui_print " - Mounting /vendor..."
 mount /vendor
 mount -o remount,rw /vendor

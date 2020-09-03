@@ -151,9 +151,13 @@ disable_wsm() {
 }
 
 disable_recovery_restoration() {
+  local r=recovery-from-boot.p
+
   ui_print " - Disabling restoration of stock recovery..."
 
-  mv $ANDROID_ROOT/system/recovery-from-boot.p $ANDROID_ROOT/system/recovery-from-boot.p~
+  for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
+    [ -f $i/$r ] && mv $i/$r $i/$r~
+  done
 }
 
 patch_libbluetooth() {
@@ -188,7 +192,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.4b3 for"
+print_justified "Multi-disabler v2.4b4 for"
 print_justified "G98[05]F, G98[168][BN0],"
 print_justified "N98[05]F, G98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"

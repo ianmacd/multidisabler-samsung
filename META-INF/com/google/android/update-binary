@@ -1,10 +1,6 @@
 #!/sbin/sh
 #
-# Flashable services disabler for G97[035][FN0], G977[BN] and N97[05][FN0],
-# N976[BN0], N971N, A[1245]05[FN], A105M, A[25]05([YG]N|G), A405FM, T51[05],
-# T72[05], T86[05], F900[FN] and F907[BN].
-#
-# by Ian Macdonald.
+# A simple services disabler by Ian Macdonald.
 #
 # Use this to prime your device after installing TWRP.
 
@@ -60,17 +56,20 @@ rm_from_manifest() {
 disable_fbe() {
   ui_print " - Disabling file-based encryption (FBE) for /data..."
 
-  # S20 range = fstab.exynos990.
+  # S20/N20 range = fstab.exynos990.
   # S10 range = fstab.exynos9820.
   # Note 10 range = fstab.exynos9825.
   # A[124]0 range = fstab.exynos7885.
   # A50 = fstab.exynos9610.
   # Tab A 10.1 range = fstab.exynos7885.
+  # Snapdragon devices = fstab.qcom.
   #
   for i in /vendor/etc/fstab.exynos* \
 	   /vendor/etc/fstab.qcom*; do
     # This comments out the offending line and adds an edited one.
-    sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+    if [ -f $i ]; then
+      sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+    fi
   done
 }
 
@@ -192,9 +191,9 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.4b5 for"
+print_justified "Multi-disabler v2.4 for"
 print_justified "G98[05]F, G98[168][BN0],"
-print_justified "N98[05]F, G98[16][BN0],"
+print_justified "N98[05]F, N98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"

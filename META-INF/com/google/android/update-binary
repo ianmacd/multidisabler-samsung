@@ -207,7 +207,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.5b4 for"
+print_justified "Multi-disabler v2.5b5 for"
 print_justified "G98[05]F, G98[168][BN0],"
 print_justified "N98[05]F, N98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
@@ -248,6 +248,10 @@ if ! mount | grep $ANDROID_ROOT >/dev/null; then
   ANDROID_ROOT=/system_root
   ui_print " - Mount failed. Mounting at $ANDROID_ROOT..."
   mount $ANDROID_ROOT
+  if ! mount | grep $ANDROID_ROOT >/dev/null; then
+    ui_print " - Even that mount failed. Aborting..."
+    exit 2
+  fi
 fi
 
 ui_print " - Mounting /vendor..."

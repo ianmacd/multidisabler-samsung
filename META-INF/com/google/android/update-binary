@@ -54,6 +54,8 @@ rm_from_manifest() {
 }
 
 disable_fbe() {
+  local i
+
   ui_print " - Disabling file-based encryption (FBE) for /data..."
 
   # S20/N20 range = fstab.exynos990.
@@ -74,6 +76,8 @@ disable_fbe() {
 }
 
 disable_vaultkeeper() {
+  local i
+
   ui_print " - Disabling vaultkeeperd..."
 
   if [ $major -eq 10 ]; then
@@ -151,12 +155,19 @@ disable_wsm() {
 
 disable_recovery_restoration() {
   local r=recovery-from-boot.p
+  local moved
+  local i
 
   ui_print " - Disabling restoration of stock recovery..."
 
   for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
-    [ -f $i/$r ] && mv $i/$r $i/$r~
+    if [ -f $i/$r ]; then
+      mv $i/$r $i/$r~
+      moved=true
+    fi
   done
+
+  [ -z "$moved" ] && ui_print " - Found no stock recovery. Pfft."
 }
 
 patch_libbluetooth() {
@@ -191,7 +202,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.4 for"
+print_justified "Multi-disabler v2.5b4 for"
 print_justified "G98[05]F, G98[168][BN0],"
 print_justified "N98[05]F, N98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
@@ -225,8 +236,15 @@ fi
 ui_print " - Detected a $device device on $fw firmware."
 
 ui_print " - Mounting $ANDROID_ROOT..."
-mount $ANDROID_ROOT
-mount -o remount,rw $ANDROID_ROOT
+mount $ANDROID_ROOT 2>/dev/null
+mount -o remount,rw $ANDROID_ROOT 2>/dev/null
+
+if ! mount | grep $ANDROID_ROOT >/dev/null; then
+  ANDROID_ROOT=/system_root
+  ui_print " - Mount failed. Mounting at $ANDROID_ROOT..."
+  mount $ANDROID_ROOT
+fi
+
 ui_print " - Mounting /vendor..."
 mount /vendor
 mount -o remount,rw /vendor

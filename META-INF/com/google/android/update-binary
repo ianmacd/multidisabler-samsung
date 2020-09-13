@@ -261,7 +261,7 @@ if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|T([89]7[0
   disable_vaultkeeper
   disable_proca
   [ $major -eq 10 ] && disable_wsm
-  echo $device | grep -E 'T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
+  echo $device | grep -E 'G97([035][FN0]|7[BN])|T860|F90(0[FN]|7[BN])' >/dev/null && disable_cass
   [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 fi
 

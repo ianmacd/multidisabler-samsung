@@ -112,6 +112,8 @@ disable_vaultkeeper() {
 }
 
 disable_cass() {
+  local i
+
   # The T860 needs this. Otherwise, the log will fill with messages like this:
   #
   # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect(4)
@@ -125,7 +127,11 @@ disable_cass() {
   #
   ui_print " - Disabling cass..."
 
-  sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/(system|vendor)\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
+  for i in $ANDROID_ROOT/init.rc /vendor/init/cass.rc; do
+    if [ -f $i ]; then
+      sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/(system|vendor)\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $i
+    fi
+  done
 }
 
 disable_proca() {

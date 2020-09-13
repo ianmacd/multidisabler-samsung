@@ -50,7 +50,13 @@ rm_from_manifest() {
   #
   [ $major -eq 10 ] && local path_extra='\.hardware'
 
-  sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' /vendor/etc/vintf/manifest.xml $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml
+  for i in /vendor/etc/vintf/manifest.xml \
+	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \
+	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml; do
+    if [ -f $i ]; then
+      sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' $i
+    fi
+  done
 }
 
 disable_fbe() {
@@ -144,13 +150,6 @@ disable_proca() {
   #
   sed -i -e 's/^[^#]/# &/' /vendor/etc/init/pa_daemon*.rc
 
-  # Option 1: Works only if operable XML stanza is not the last in file.
-  #sed -i -e '/<name>vendor\.samsung\.security\.proca<\/name>/,/<hal format="hidl">/d' /vendor/etc/vintf/manifest.xml
-  #
-  # Option 2: This is safer, but more complex.
-
-  # Package path is different on Android 10. Check and adapt.
-  #
   rm_from_manifest proca
 }
 

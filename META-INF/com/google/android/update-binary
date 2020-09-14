@@ -4,6 +4,8 @@
 #
 # Use this to prime your device after installing TWRP.
 
+DEBUG=true
+
 ZIPFILE=$3
 ZIPNAME=${ZIPFILE##*/}
 OUTFD=$2
@@ -29,6 +31,12 @@ ui_print() {
   echo -ne "ui_print\n" >> /proc/self/fd/$OUTFD
 }
 
+debug_print() {
+  if [ "$DEBUG" = true ]; then
+    ui_print "$*"
+  fi
+}
+
 print_full_bar() {
   ui_print "$(printf '%*s\n' $scr_wdth | tr ' ' '=')"
 }
@@ -43,8 +51,28 @@ print_justified() {
   ui_print "=$ljust$str$rjust="
 }
 
+md5() {
+  md5sum -b "$1"
+}
+
+file_changed() {
+  local file="$1"
+  local old_md5="$2"
+  local new_md5=$( md5 "$file" )
+  # debug_print " -   Old MD5: $old_md5."
+  # debug_print " -   New MD5: $new_md5."
+
+  if [ $new_md5 != $old_md5 ];then
+    debug_print " -   $file has been modified."
+  else
+    debug_print " -   No changes were made to $file."
+  fi
+}
+
 rm_from_manifest() {
   local service=$1
+  local md5
+  local i
 
   # Package path is different on Android 10. Check and adapt.
   #
@@ -54,12 +82,16 @@ rm_from_manifest() {
 	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \
 	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml; do
     if [ -f $i ]; then
+      ui_print " -   Found $i."
+      md5=$( md5 $i )
       sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' $i
+      file_changed $i $md5
     fi
   done
 }
 
 disable_fbe() {
+  local md5
   local i
 
   ui_print " - Disabling file-based encryption (FBE) for /data..."
@@ -74,14 +106,18 @@ disable_fbe() {
   #
   for i in /vendor/etc/fstab.exynos* \
 	   /vendor/etc/fstab.qcom*; do
-    # This comments out the offending line and adds an edited one.
     if [ -f $i ]; then
+      ui_print " -   Found $i."
+      md5=$( md5 $i )
+      # This comments out the offending line and adds an edited one.
       sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+      file_changed $i $md5
     fi
   done
 }
 
 disable_vaultkeeper() {
+  local md5
   local i
 
   ui_print " - Disabling vaultkeeperd..."
@@ -90,7 +126,12 @@ disable_vaultkeeper() {
     # This is Android 10: Vaultkeeper has its own init files.
     #
     for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc /vendor/etc/init/vaultkeeper*; do
-      [ -f $i ] && sed -i -e 's/^[^#].*$/# &/' $i
+      if [ -f $i ]; then
+	ui_print " -   Found $i."
+	md5=$( md5 $i )
+	sed -i -e 's/^[^#].*$/# &/' $i
+	file_changed $i $md5
+      fi
     done
   else
     # This is Android 9: Vaultkeeper is started from init.rc.
@@ -113,11 +154,15 @@ disable_vaultkeeper() {
   #
   # Option 3: This works and is and is the least invasive choice.
   for i in $ANDROID_ROOT/system /vendor; do
-    [ -f $i/bin/vaultkeeperd ] && chmod 0 $i/bin/vaultkeeperd
+    if [ -f $i/bin/vaultkeeperd ]; then
+      ui_print " -   Found $i/bin/vaultkeeperd. Disabling..."
+      chmod 0 $i/bin/vaultkeeperd
+    fi
   done
 }
 
 disable_cass() {
+  local md5
   local i
 
   # The T860 needs this. Otherwise, the log will fill with messages like this:
@@ -135,12 +180,18 @@ disable_cass() {
 
   for i in $ANDROID_ROOT/init.rc /vendor/init/cass.rc; do
     if [ -f $i ]; then
+      ui_print " -   Found $i. Disabling..."
+      md5=$( md5 $i )
       sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/(system|vendor)\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $i
+      file_changed $i $md5
     fi
   done
 }
 
 disable_proca() {
+  local md5
+  local i
+
   ui_print " - Disabling process authentication..."
 
   # G97[035]F = pa_daemon.rc on Android 9; pa_daemon_teegris.rc on Android 10.
@@ -148,7 +199,13 @@ disable_proca() {
   # T510 + T515 = pa_daemon_kinibi.rc
   # T860 + T865 = pa_daemon_qsee.rc
   #
-  sed -i -e 's/^[^#]/# &/' /vendor/etc/init/pa_daemon*.rc
+  for i in /vendor/etc/init/pa_daemon*.rc; do
+    if [ -f $i ]; then
+      ui_print " -   Found $i. Disabling..."
+      sed -i -e 's/^[^#]/# &/' $i
+      file_changed $i $md5
+    fi
+  done
 
   rm_from_manifest proca
 }
@@ -167,12 +224,13 @@ disable_recovery_restoration() {
 
   for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
     if [ -f $i/$r ]; then
+      ui_print " -   Found $i/$r. Disabling..."
       mv $i/$r $i/$r~
       moved=true
     fi
   done
 
-  [ -z "$moved" ] && ui_print " - Found no stock recovery. Pfft."
+  [ -z "$moved" ] && ui_print " -   Found no stock recovery. Pfft."
 }
 
 patch_libbluetooth() {
@@ -207,7 +265,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.5b5 for"
+print_justified "Multi-disabler v2.5b10 for"
 print_justified "G98[05]F, G98[168][BN0],"
 print_justified "N98[05]F, N98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
@@ -257,6 +315,11 @@ fi
 ui_print " - Mounting /vendor..."
 mount /vendor
 mount -o remount,rw /vendor
+
+if ! mount | grep /vendor >/dev/null; then
+  ui_print " - Mount failed. Aborting..."
+  exit 3
+fi
 
 disable_fbe
 disable_recovery_restoration

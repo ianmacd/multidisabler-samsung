@@ -110,7 +110,7 @@ disable_fbe() {
       ui_print " -   Found $i."
       md5=$( md5 $i )
       # This comments out the offending line and adds an edited one.
-      sed -i -e 's/^\([^#].*\/userdata.*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+      sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
       file_changed $i $md5
     fi
   done

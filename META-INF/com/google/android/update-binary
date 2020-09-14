@@ -1,6 +1,6 @@
 #!/sbin/sh
 #
-# A simple services disabler by Ian Macdonald.
+# A simple Samsung services disabler by Ian Macdonald.
 #
 # Use this to prime your device after installing TWRP.
 
@@ -63,9 +63,9 @@ file_changed() {
   # debug_print " -   New MD5: $new_md5."
 
   if [ $new_md5 != $old_md5 ];then
-    debug_print " -   $file has been modified."
+    debug_print " -     ...modified."
   else
-    debug_print " -   No changes were made to $file."
+    debug_print " -     ...unchanged."
   fi
 }
 
@@ -146,13 +146,6 @@ disable_vaultkeeper() {
   #
   rm_from_manifest vaultkeeper
 
-  # Option 1: Unknown whether it even works.
-  # sed -i -e 's/\(ro\.security\.vaultkeeper\.native=\)1/\10/' /vendor/build.prop
-  #
-  # Option 2: This works and apparently won't spam logcat, but is drastic.
-  # rm $ANDROID_ROOT/system/bin/vaultkeeperd
-  #
-  # Option 3: This works and is and is the least invasive choice.
   for i in $ANDROID_ROOT/system /vendor; do
     if [ -f $i/bin/vaultkeeperd ]; then
       ui_print " -   Found $i/bin/vaultkeeperd. Disabling..."
@@ -169,12 +162,13 @@ disable_cass() {
   #
   # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect(4)
   # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect ril daemon(2). Retry cnt(6)
-  #
   # The F907B on Android 10 also needs it:
   #
   # 04-05 22:21:23.519  3599  3599 E CASS_DEBUG: VaultKeeper is not ready. try again.
   # 04-05 22:21:23.519  3599  3599 I CASS_DEBUG: Disconnect ril daemon
   # 04-05 22:21:23.519  3599  3599 I CASS_DEBUG: Failed to connect ril daemon(1). Retry cnt(2)
+  #
+  # As of OneUI 2.5, other devices need it, too; even Exynos.
   #
   ui_print " - Disabling cass..."
 
@@ -265,7 +259,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.5b12 for"
+print_justified "Multi-disabler v2.5b13 for"
 print_justified "G98[05]F, G98[168][BN0],"
 print_justified "N98[05]F, N98[16][BN0],"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"

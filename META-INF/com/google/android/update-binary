@@ -265,7 +265,7 @@ print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
 print_justified "A[25]05[YG]N, A405FM, A[57]15[FN], T51[05],"
 print_justified "T59[05], T72[05], T8[67][05], T97[05],"
-print_justified "T976B, F900[FN], F907[BN] and F916[BN0]."
+print_justified "T976B, F900[FN], F907[BN] and F916[BNU0]."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -283,7 +283,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM|[57]15[FN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BN0]' >/dev/null; then
+if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM|[57]15[FN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BNU0]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1
@@ -316,7 +316,7 @@ fi
 disable_fbe
 disable_recovery_restoration
 
-if echo $device | grep -Ev 'A[57]15[FN]|G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|T([89]7[05]|976B)|F916[BN0]' >/dev/null; then
+if echo $device | grep -Ev 'A[57]15[FN]|G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|T([89]7[05]|976B)|F916[BNU0]' >/dev/null; then
   disable_vaultkeeper
   disable_proca
 

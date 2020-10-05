@@ -259,7 +259,7 @@ ui_print " "
 print_full_bar
 print_justified "Multi-disabler v2.6 for"
 print_justified "G98[05]F, G98[168][BN0],"
-print_justified "N98[05]F, N98[16][BN0],"
+print_justified "N98[05]F, N98[16][BN0], N770F"
 print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
 print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
 print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G,"
@@ -283,7 +283,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM|[57]15[FN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BNU0]' >/dev/null; then
+if echo $device | grep -Ev 'G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|N770F|G97([035][FN0]|7[BN])|N97([05][FN0]|6[BN0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM|[57]15[FN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BNU0]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1
@@ -316,7 +316,7 @@ fi
 disable_fbe
 disable_recovery_restoration
 
-if echo $device | grep -Ev 'A[57]15[FN]|G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|T([89]7[05]|976B)|F916[BNU0]' >/dev/null; then
+if echo $device | grep -Ev 'A[57]15[FN]|G98([05]F|[168][BN0])|N98([05]F|[16][BN0])|N770F|T([89]7[05]|976B)|F916[BNU0]' >/dev/null; then
   disable_vaultkeeper
   disable_proca
 

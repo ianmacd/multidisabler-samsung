@@ -258,7 +258,7 @@ patch_libbluetooth() {
 ui_print " "
 print_full_bar
 print_justified "Multi-disabler v2.6 for"
-print_justified "G98[05]F, G98[168][BNUW0],"
+print_justified "G98[05]F, G98[168][BNUW0], G781[BNUW0]"
 print_justified "N98[05]F, N98[16][BNUW0], N770F"
 print_justified "G97[035][FNUW0], G977[BNUW], N97[05][FNUW0],"
 print_justified "N971N, N976[BNUW0], A[1245]05[FN], A105M,"
@@ -283,7 +283,7 @@ fw=${bl:$((${#bl} - 4)):4}
 #
 device=${bl:0:$((${#bl} - 8))}
 
-if echo $device | grep -Ev 'G98([05]F|[168][BNUW0])|N98([05]F|[16][BNUW0])|N770F|G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNUW0]|1N)|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM|[157]15[FN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BNUW0]' >/dev/null; then
+if echo $device | grep -Ev 'G98([05]F|[168][BNUW0])|N98([05]F|[16][BNUW0])|N770F|G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNUW0]|1N)|G781[BNUW0]|A([1245]05[FN]|105M|[25]05([YG]N|G)|405FM|[157]15[FN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BNUW0]' >/dev/null; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1
@@ -316,7 +316,7 @@ fi
 disable_fbe
 disable_recovery_restoration
 
-if echo $device | grep -Ev 'A[157]15[FN]|G98([05]F|[168][BNUW0])|N98([05]F|[16][BNUW0])|N976[UW]|N770F|T([89]7[05]|976B)|F916[BNUW0]' >/dev/null; then
+if echo $device | grep -Ev 'A[157]15[FN]|G98([05]F|[168][BNUW0])|G781[BNUW0]|N98([05]F|[16][BNUW0])|N976[UW]|N770F|T([89]7[05]|976B)|F916[BNUW0]' >/dev/null; then
   disable_vaultkeeper
   disable_proca
 

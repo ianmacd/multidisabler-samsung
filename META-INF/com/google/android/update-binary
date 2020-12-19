@@ -257,8 +257,8 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v2.7b2 for"
-print_justified "a whole host of Samsung devices."
+print_justified "Multi-disabler v3.0a1 for"
+print_justified "innumerable Samsung devices."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "
@@ -276,8 +276,9 @@ fw=${bl:$((${#bl} - 4)):4}
 # Device is first 5 characters of bootloader string.
 #
 device=${bl:0:$((${#bl} - 8))}
+mft=$(getprop ro.product.manufacturer)
 
-if echo $device | grep -Ev 'G98([05]F|[168][BNUW0])|N98([05]F|[16][BNUW0])|N770F|G770[FUW]|G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNQUW0]|1N)|G780F|G781[BNUW0]|A([1245]05[FNW]|105M|[25]05([YG]N|G)|207[FM]|405FM|[157]15[FMN])|T(5[19]|72|8[67])[05]|T97([05]|6B)|F90(0[FN]|7[BN])|F916[BNUW0]|M[23]15F|G96[50][00]|N9600' >/dev/null; then
+if [ "$mft" != samsung ]; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

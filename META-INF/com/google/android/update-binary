@@ -312,17 +312,16 @@ disable_recovery_restoration
 if echo $device | grep -Ev 'A[157]15[FMN]|G98([05]F|[168][BNUW0])|G780F|G781[BNUW0]|N98([05]F|[16][BNUW0])|N770F|T([89]7[05]|976B)|F916[BNUW0]|M[23]15F' >/dev/null; then
   disable_vaultkeeper
   disable_proca
-
-  if [ $major -eq 10 ]; then
-    disable_wsm
-    if echo $device | grep -E 'G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNQ0]|1N)|T860|F90(0[FN]|7[BN])|M[23]15F' >/dev/null; then
-    if echo $device | grep -E 'G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNQ0]|1N)|T860|F90(0[FN]|7[BN])' >/dev/null; then
-      disable_cass
-    fi
-  fi
-
-  [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 fi
+
+if [ $major -gt 9 ]; then
+  disable_wsm
+  if echo $device | grep -E 'G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNQ0]|1N)|T860|F90(0[FN]|7[BN])|M[23]15F' >/dev/null; then
+    disable_cass
+  fi
+fi
+
+[ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 
 ui_print " - Unmounting /vendor..."
 umount /vendor

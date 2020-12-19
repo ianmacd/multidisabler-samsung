@@ -278,7 +278,7 @@ fw=${bl:$((${#bl} - 4)):4}
 device=${bl:0:$((${#bl} - 8))}
 mft=$(getprop ro.product.manufacturer)
 
-if [ "$mft" != samsung ]; then
+if [ "$mft" != samsung ] || [ $major -lt 9 ]; then
   ui_print " - Unsupported device detected. Installation aborted."
   ui_print " "
   exit 1

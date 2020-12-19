@@ -266,6 +266,7 @@ ui_print " "
 os=$(getprop ro.build.version.release)
 major=${os%%.*}
 bl=$(getprop ro.boot.bootloader)
+dp=$(getprop ro.boot.dynamic_partitions)
 
 # Firmware version starts at either 8th or 9th character, depending on length
 # of bootloader string (12 or 13).
@@ -309,7 +310,7 @@ fi
 disable_fbe
 disable_recovery_restoration
 
-if echo $device | grep -Ev 'A[157]15[FMN]|G98([05]F|[168][BNUW0])|G780F|G781[BNUW0]|N98([05]F|[16][BNUW0])|N770F|T([89]7[05]|976B)|F916[BNUW0]|M[23]15F' >/dev/null; then
+if [ "$dp" != true ]; then
   disable_vaultkeeper
   disable_proca
 fi

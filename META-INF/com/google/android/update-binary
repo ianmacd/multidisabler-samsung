@@ -120,8 +120,8 @@ disable_vaultkeeper() {
 
   ui_print " - Disabling vaultkeeperd..."
 
-  if [ $major -eq 10 ]; then
-    # This is Android 10: Vaultkeeper has its own init files.
+  if [ $major -gt 9 ]; then
+    # This is Android 10/11: Vaultkeeper has its own init files.
     #
     for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc /vendor/etc/init/vaultkeeper*; do
       if [ -f $i ]; then

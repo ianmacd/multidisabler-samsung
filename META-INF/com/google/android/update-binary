@@ -258,15 +258,7 @@ patch_libbluetooth() {
 ui_print " "
 print_full_bar
 print_justified "Multi-disabler v2.7b2 for"
-print_justified "G98[05]F, G98[168][BN0],"
-print_justified "N98[05]F, N98[16][BN0], N770F"
-print_justified "G97[035][FN0], G977[BN], N97[05][FN0],"
-print_justified "N971N, N976[BN0], A[1245]05[FN], A105M,"
-print_justified "A[25]05G, A[1245]05[FN], A105M, A[25]05G, A207[FM]"
-print_justified "A[25]05[YG]N, A405FM, A[57]15[FN], T51[05],"
-print_justified "M[23]15F, T59[05], T72[05], T8[67][05],"
-print_justified "T97[05], T976B, F900[FN], F907[BN]"
-print_justified "and F916[BNUW0]."
+print_justified "a whole host of Samsung devices."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "

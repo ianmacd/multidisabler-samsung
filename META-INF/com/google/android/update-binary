@@ -74,7 +74,7 @@ rm_from_manifest() {
 
   # Package path is different on Android 10. Check and adapt.
   #
-  [ $major -eq 10 ] && local path_extra='\.hardware'
+  [ $major -gt 9 ] && local path_extra='\.hardware'
 
   for i in /vendor/etc/vintf/manifest.xml \
 	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \

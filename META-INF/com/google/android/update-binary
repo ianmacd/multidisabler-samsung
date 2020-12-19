@@ -294,7 +294,7 @@ mount -o remount,rw $ANDROID_ROOT 2>/dev/null
 if ! mount | grep $ANDROID_ROOT >/dev/null; then
   ANDROID_ROOT=/system_root
   ui_print " - Mount failed. Mounting at $ANDROID_ROOT..."
-  mount $ANDROID_ROOT
+  mount -o rw $ANDROID_ROOT
   if ! mount | grep $ANDROID_ROOT >/dev/null; then
     ui_print " - Even that mount failed. Aborting..."
     exit 2

@@ -283,6 +283,8 @@ if echo $device | grep -Ev 'G98([05]F|[168][BNUW0])|N98([05]F|[16][BNUW0])|N770F
   exit 1
 fi
 ui_print " - Detected a $device device on $fw firmware."
+ui_print " - The environment appears to be Android $major."
+ui_print " "
 
 ui_print " - Mounting $ANDROID_ROOT..."
 mount $ANDROID_ROOT 2>/dev/null

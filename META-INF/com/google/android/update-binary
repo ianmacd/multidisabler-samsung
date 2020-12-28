@@ -4,7 +4,7 @@
 #
 # Use this to prime your device after installing TWRP.
 
-DEBUG=
+DEBUG=true
 
 ZIPFILE=$3
 ZIPNAME=${ZIPFILE##*/}
@@ -57,8 +57,6 @@ file_changed() {
   local file="$1"
   local old_md5="$2"
   local new_md5=$( md5 "$file" )
-  # debug_print " -   Old MD5: $old_md5."
-  # debug_print " -   New MD5: $new_md5."
 
   if [ $new_md5 != $old_md5 ]; then
     debug_print " -     ...modified."
@@ -209,20 +207,35 @@ disable_wsm() {
 
 disable_recovery_restoration() {
   local r=recovery-from-boot.p
-  local moved
+  local found
   local i
 
   ui_print " - Disabling restoration of stock recovery..."
 
   for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
+    if [ -f $i/$r~ ]; then
+	ui_print " -   ...already disabled."
+	found=true
+	break
+    fi
+
     if [ -f $i/$r ]; then
       ui_print " -   Found $i/$r. Disabling..."
       mv $i/$r $i/$r~
-      moved=true
+
+      if [ -f $i/$r~ ]; then
+	ui_print " -     ...succeeded."
+      else
+	ui_print " -     ...failed."
+      fi
+
+      found=true
+      break
     fi
+
   done
 
-  [ -z "$moved" ] && ui_print " -   Found no stock recovery. Pfft."
+  [ -z "$found" ] && ui_print " -   Found no stock recovery. Pfft."
 }
 
 patch_libbluetooth() {
@@ -245,19 +258,19 @@ patch_libbluetooth() {
   xxd -p $f | tr -d '\n ' | sed -e $substitute | xxd -rp > $tf
 
   if ! cmp $tf $f >/dev/null && [ $(stat -c '%s' $tf) -eq $(stat -c '%s' $f) ]; then
-    ui_print " - Patching succeeded."
+    ui_print " -   Patching succeeded."
     touch -r $f $tf
     chmod 644 $tf
     mv $tf $f
   else
-    ui_print " - Patching failed. No change made."
+    ui_print " -   Patching failed. No change made."
     rm -f $tf
   fi
 }
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v3.0a1 for"
+print_justified "Multi-disabler v3.0 for"
 print_justified "innumerable Samsung devices."
 print_justified "by Ian Macdonald"
 print_full_bar
@@ -278,12 +291,23 @@ fw=${bl:$((${#bl} - 4)):4}
 device=${bl:0:$((${#bl} - 8))}
 mft=$(getprop ro.product.manufacturer)
 
-if [ "$mft" != samsung ] || [ $major -lt 9 ]; then
-  ui_print " - Unsupported device detected. Installation aborted."
+if [ "$mft" != samsung ]; then
+  ui_print " - Device appears not to be made by Samsung."
+  fatal=true
+elif [ -z "$device" ]; then
+  ui_print " - Could not determine device model."
+  fatal=true
+elif [ $major -lt 9 ]; then
+  ui_print " - This software is incompatible with Android $major."
+  fatal=true
+fi
+if [ -n "$fatal" ]; then
+  ui_print " - Installation aborted."
   ui_print " "
   exit 1
 fi
-ui_print " - Detected a $device device on $fw firmware."
+
+ui_print " - Detected a $device device with a $fw bootloader."
 ui_print " - The environment appears to be Android $major."
 ui_print " "
 
@@ -293,10 +317,10 @@ mount -o remount,rw $ANDROID_ROOT 2>/dev/null
 
 if ! mount | grep $ANDROID_ROOT >/dev/null; then
   ANDROID_ROOT=/system_root
-  ui_print " - Mount failed. Mounting at $ANDROID_ROOT..."
+  ui_print " -   Attempt failed. Mounting at $ANDROID_ROOT..."
   mount -o rw $ANDROID_ROOT
   if ! mount | grep $ANDROID_ROOT >/dev/null; then
-    ui_print " - Even that mount failed. Aborting..."
+    ui_print " -   Even that attempt failed. Aborting..."
     exit 2
   fi
 fi
@@ -306,7 +330,7 @@ mount /vendor
 mount -o remount,rw /vendor
 
 if ! mount | grep /vendor >/dev/null; then
-  ui_print " - Mount failed. Aborting..."
+  ui_print " -   Mount failed. Aborting..."
   exit 3
 fi
 

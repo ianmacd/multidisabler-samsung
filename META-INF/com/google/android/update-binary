@@ -270,8 +270,8 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v3.1b2 for"
-print_justified "innumerable Samsung devices."
+print_justified "Multi-disabler v3.1 for Samsung devices"
+print_justified "running Android 9 or later."
 print_justified "by Ian Macdonald"
 print_full_bar
 ui_print " "

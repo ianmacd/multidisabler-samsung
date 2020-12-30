@@ -270,7 +270,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v3.1b1 for"
+print_justified "Multi-disabler v3.1b2 for"
 print_justified "innumerable Samsung devices."
 print_justified "by Ian Macdonald"
 print_full_bar
@@ -289,7 +289,7 @@ fw=${bl:$((${#bl} - 4)):4}
 # Device is first 5 characters of bootloader string.
 #
 device=${bl:0:$((${#bl} - 8))}
-mft=$(getprop ro.product.manufacturer)
+mft=$(getprop ro.product.manufacturer | tr '[A-Z]' '[a-z]')
 
 if [ "$mft" != samsung ]; then
   ui_print " - Device appears not to be made by Samsung."

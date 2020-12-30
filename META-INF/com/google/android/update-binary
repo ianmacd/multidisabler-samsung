@@ -270,7 +270,7 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v3.0 for"
+print_justified "Multi-disabler v3.1b1 for"
 print_justified "innumerable Samsung devices."
 print_justified "by Ian Macdonald"
 print_full_bar
@@ -340,6 +340,7 @@ disable_recovery_restoration
 if [ "$dp" != true ]; then
   disable_vaultkeeper
   disable_proca
+  [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 fi
 
 if [ $major -gt 9 ]; then
@@ -348,8 +349,6 @@ if [ $major -gt 9 ]; then
     disable_cass
   fi
 fi
-
-[ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -eq 10 ] && patch_libbluetooth
 
 ui_print " - Unmounting /vendor..."
 umount /vendor

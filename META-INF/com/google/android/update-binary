@@ -121,21 +121,19 @@ disable_fbe() {
 
   ui_print " - Disabling file-based encryption (FBE) for /data..."
 
-  # S20/N20 range = fstab.exynos990.
-  # S10 range = fstab.exynos9820.
-  # Note 10 range = fstab.exynos9825.
-  # A[124]0 range = fstab.exynos7885.
-  # A50 = fstab.exynos9610.
-  # Tab A 10.1 range = fstab.exynos7885.
+  # Exynos devices = fstab.exynos*.
+  # MediaTek devices = fstab.mt*.
   # Snapdragon devices = fstab.qcom.
   #
   for i in /vendor/etc/fstab.exynos* \
+	   /vendor/etc/fstab.mt* \
 	   /vendor/etc/fstab.qcom*; do
     if [ -f $i ]; then
       ui_print " -   Found $i."
       md5=$( md5 $i )
       # This comments out the offending line and adds an edited one.
       sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+      sed -i -e 's/^\([^#].*\)forceencrypt=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
       file_changed $i $md5
     fi
   done

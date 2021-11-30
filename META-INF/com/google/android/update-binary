@@ -239,7 +239,7 @@ disable_recovery_restoration() {
 
   ui_print " - Disabling restoration of stock recovery..."
 
-  for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
+  for i in $ANDROID_ROOT $ANDROID_ROOT/system /vendor; do
     if [ -f $i/$r~ ]; then
 	ui_print " -   ...already disabled."
 	found=true

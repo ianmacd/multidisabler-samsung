@@ -76,7 +76,8 @@ rm_from_manifest() {
 
   for i in /vendor/etc/vintf/manifest.xml \
 	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \
-	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml; do
+	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml \
+	   /vendor/etc/vintf/manifest/wsm_manifest.xml; do
     if [ -f $i ]; then
       ui_print " -   Found $i."
       md5=$( md5 $i )

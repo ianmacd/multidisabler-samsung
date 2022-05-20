@@ -91,10 +91,10 @@ resize_vendor() {
 
   ui_print " - Unmounting /vendor..."
   umount /vendor
-  ui_print " - Checking vendor block parition before resizing..."
+  ui_print " - Checking vendor block partition before resizing..."
   e2fsck -f $dm_block
   ui_print " - Resizing the filesystem on $dm_block..."
-  resize2fs $dm_block $new_blocksK
+  resize2fs $dm_block
   ui_print " - Make the partition R/W by unsharing its blocks..."
   e2fsck -E unshare_blocks $dm_block
   ui_print " - Remounting /vendor..."
@@ -108,7 +108,7 @@ vendor_free_size_check() {
     ui_print " -     ...succeeded."
     rm -f /vendor/test
   else
-    ui_print " -     ...No free space left on vendor, attempt to resizing vendor..."
+    ui_print " -     ...No free space left on vendor, attempting to resize vendor..."
     ui_print " "
     rm -f /vendor/test
     resize_vendor

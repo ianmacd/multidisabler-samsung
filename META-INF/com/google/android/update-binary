@@ -177,10 +177,10 @@ disable_vaultkeeper() {
   local md5
   local i
 
-  ui_print " - Disabling vaultkeeperd..."
+  ui_print " - Disabling vaultkeeper..."
 
   if [ $major -gt 9 ]; then
-    # This is Android 10/11: Vaultkeeper has its own init files.
+    # This is Android 10/11/12/13: Vaultkeeper has its own init files.
     #
     for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc /vendor/etc/init/vaultkeeper*; do
       if [ -f $i ]; then
@@ -207,6 +207,9 @@ disable_vaultkeeper() {
     if [ -f $i/bin/vaultkeeperd ]; then
       ui_print " -   Found $i/bin/vaultkeeperd. Disabling..."
       chmod 0 $i/bin/vaultkeeperd
+    fi
+    if [ -f $i/bin/vendor.samsung.hardware.security.vaultkeeper@2.0-service ]; then
+      chmod 0 $i/bin/vendor.samsung.hardware.security.vaultkeeper@2.0-service
     fi
   done
 }
@@ -405,9 +408,9 @@ vendor_free_size_check
 disable_fbe
 disable_fde
 disable_recovery_restoration
+disable_vaultkeeper
 
 if [ "$dp" != true ]; then
-  disable_vaultkeeper
   disable_proca
   [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 fi

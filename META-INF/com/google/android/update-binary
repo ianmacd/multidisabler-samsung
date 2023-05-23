@@ -317,45 +317,11 @@ patch_libbluetooth() {
 
 ui_print " "
 print_full_bar
-print_justified "Multi-disabler v3.1 for Samsung devices"
+print_justified "Multi-disabler for Samsung devices"
 print_justified "running Android 9 or later."
-print_justified "by Ian Macdonald"
+print_justified "by Ian Macdonald, afaneh92"
+print_justified "corsicanu & Simon1511"
 print_full_bar
-ui_print " "
-
-os=$(getprop ro.build.version.release)
-major=${os%%.*}
-bl=$(getprop ro.boot.bootloader)
-dp=$(getprop ro.boot.dynamic_partitions)
-
-# Firmware version starts at either 8th or 9th character, depending on length
-# of bootloader string (12 or 13).
-#
-fw=${bl:$((${#bl} - 4)):4}
-
-# Device is first 5 characters of bootloader string.
-#
-device=${bl:0:$((${#bl} - 8))}
-mft=$(getprop ro.product.manufacturer | tr '[A-Z]' '[a-z]')
-
-if [ "$mft" != samsung ]; then
-  ui_print " - Device appears not to be made by Samsung."
-  fatal=true
-elif [ -z "$device" ]; then
-  ui_print " - Could not determine device model."
-  fatal=true
-elif [ $major -lt 9 ]; then
-  ui_print " - This software is incompatible with Android $major."
-  fatal=true
-fi
-if [ -n "$fatal" ]; then
-  ui_print " - Installation aborted."
-  ui_print " "
-  exit 1
-fi
-
-ui_print " - Detected a $device device with a $fw bootloader."
-ui_print " - The environment appears to be Android $major."
 ui_print " "
 
 ui_print " - Mounting $ANDROID_ROOT..."
@@ -380,6 +346,45 @@ if ! mount | grep /vendor >/dev/null; then
   ui_print " -   Mount failed. Aborting..."
   exit 3
 fi
+
+major=$(grep "ro.build.version.release=" $ANDROID_ROOT/system/build.prop | sed 's/ro\.build\.version\.release\=//g')
+bl=$(getprop ro.boot.bootloader)
+dp=$(getprop ro.boot.dynamic_partitions)
+
+# Firmware version starts at either 8th or 9th character, depending on length
+# of bootloader string (12 or 13).
+#
+fw=${bl:$((${#bl} - 4)):4}
+
+# Device is first 5 characters of bootloader string.
+#
+device=${bl:0:$((${#bl} - 8))}
+mft=$(getprop ro.product.manufacturer | tr '[A-Z]' '[a-z]')
+
+if [ "$mft" != samsung ]; then
+  ui_print " - Device appears not to be made by Samsung."
+  fatal=true
+elif [ -z "$device" ]; then
+  ui_print " - Could not determine device model."
+  fatal=true
+elif [ $major -lt 9 ]; then
+  ui_print " - This software is incompatible with Android $major."
+  fatal=true
+fi
+# Check if running OneUI
+if ! grep -q "knox" $ANDROID_ROOT/system/build.prop; then
+  ui_print " - Installed ROM doesn't appear to be OneUI."
+  fatal=true
+fi
+if [ -n "$fatal" ]; then
+  ui_print " - Installation aborted."
+  ui_print " "
+  exit 1
+fi
+
+ui_print " - Detected a $device device with a $fw bootloader."
+ui_print " - The environment appears to be Android $major."
+ui_print " "
 
 vendor_free_size_check
 disable_fbe

@@ -305,7 +305,7 @@ disable_recovery_restoration() {
 }
 
 patch_libbluetooth() {
-  [ $major -ne 10 ] && return
+  [ $major -ne 10 || $major -ge 13 ] && return
 
   local f=$ANDROID_ROOT/system/lib64/libbluetooth.so
   local tf=/tmp/f
@@ -411,10 +411,7 @@ disable_fde
 disable_recovery_restoration
 disable_vaultkeeper
 disable_proca
-
-if [ "$dp" != true ]; then
-  [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
-fi
+[ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 
 if [ $major -gt 9 ]; then
   disable_wsm

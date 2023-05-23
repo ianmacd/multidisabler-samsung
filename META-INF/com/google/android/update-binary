@@ -315,6 +315,18 @@ disable_frp() {
   patch_prop /vendor/build.prop ro.frp.pst
 }
 
+disable_avb() {
+  local md5
+  if [ -f /vendor/etc/fstab.default ]; then
+    ui_print " - Disabling Android Verified Boot (AVB)..."
+    ui_print " -   Found /vendor/etc/fstab.default."
+    md5=$( md5 /vendor/etc/fstab.default )
+    sed -i -e 's/\,avb\_keys\=\/avb\/q\-gsi\.avbpubkey\:\/avb\/r\-gsi\.avbpubkey\:\/avb\/s\-gsi\.avbpubkey//g' -e 's/\,avb\=vbmeta//g' \
+           -e 's/\,avb//g' /vendor/etc/fstab.default
+    file_changed /vendor/etc/fstab.default $md5
+  fi
+}
+
 patch_libbluetooth() {
   [ $major -ne 10 || $major -ge 13 ] && return
 
@@ -424,6 +436,7 @@ disable_vaultkeeper
 disable_proca
 fix_smart_view
 disable_frp
+disable_avb
 [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 
 if [ $major -gt 9 ]; then

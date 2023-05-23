@@ -304,6 +304,12 @@ disable_recovery_restoration() {
   [ -z "$found" ] && ui_print " -   Found no stock recovery. Pfft."
 }
 
+fix_smart_view() {
+  ui_print " - Fixing Smart View..."
+  patch_prop $ANDROID_ROOT/system/build.prop wlan.wfd.hdcp disable
+  patch_prop $ANDROID_ROOT/system/build.prop wifi.interface wlan0
+}
+
 patch_libbluetooth() {
   [ $major -ne 10 || $major -ge 13 ] && return
 
@@ -411,6 +417,7 @@ disable_fde
 disable_recovery_restoration
 disable_vaultkeeper
 disable_proca
+fix_smart_view
 [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 
 if [ $major -gt 9 ]; then

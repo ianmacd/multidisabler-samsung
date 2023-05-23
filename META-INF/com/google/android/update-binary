@@ -257,6 +257,7 @@ disable_proca() {
   for i in /vendor/etc/init/pa_daemon*.rc; do
     if [ -f $i ]; then
       ui_print " -   Found $i. Disabling..."
+      md5=$( md5 $i )
       sed -i -e 's/^[^#]/# &/' $i
       file_changed $i $md5
     fi
@@ -409,9 +410,9 @@ disable_fbe
 disable_fde
 disable_recovery_restoration
 disable_vaultkeeper
+disable_proca
 
 if [ "$dp" != true ]; then
-  disable_proca
   [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 fi
 

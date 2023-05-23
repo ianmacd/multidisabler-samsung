@@ -275,6 +275,7 @@ disable_recovery_restoration() {
   local r=recovery-from-boot.p
   local found
   local i
+  local md5
 
   ui_print " - Disabling restoration of stock recovery..."
 
@@ -299,6 +300,15 @@ disable_recovery_restoration() {
       break
     fi
 
+  done
+
+  for i in /vendor/etc/init/vendor_flash_recovery.rc; do
+    if [ -f $i ]; then
+      ui_print " -   Found $i."
+      md5=$( md5 $i )
+      sed -i -e 's/^[^#].*$/# &/' $i
+      file_changed $i $md5
+    fi
   done
 
   [ -z "$found" ] && ui_print " -   Found no stock recovery. Pfft."

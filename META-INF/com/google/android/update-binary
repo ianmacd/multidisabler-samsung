@@ -310,6 +310,11 @@ fix_smart_view() {
   patch_prop $ANDROID_ROOT/system/build.prop wifi.interface wlan0
 }
 
+disable_frp() {
+  ui_print " - Disabling Factory Reset Protection (FRP)..."
+  patch_prop /vendor/build.prop ro.frp.pst
+}
+
 patch_libbluetooth() {
   [ $major -ne 10 || $major -ge 13 ] && return
 
@@ -418,6 +423,7 @@ disable_recovery_restoration
 disable_vaultkeeper
 disable_proca
 fix_smart_view
+disable_frp
 [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 
 if [ $major -gt 9 ]; then

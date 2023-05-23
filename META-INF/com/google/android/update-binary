@@ -65,6 +65,20 @@ file_changed() {
   fi
 }
 
+# patch_prop <prop file> <prop name> <new prop value>
+patch_prop() {
+  local md5
+  md5=$( md5 $1 )
+  ui_print " -   Patching $2 to $3."
+  if ! grep -q "^$2=" $1; then
+    echo -ne "\n$2=$3\n" >> $1;
+  else
+    local line=$(grep -n -m1 "^$2=" $1 | cut -d: -f1);
+    sed -i "${line}s;.*;${2}=${3};" $1;
+  fi;
+  file_changed $1 $md5
+}
+
 rm_from_manifest() {
   local service=$1
   local md5
@@ -223,6 +237,7 @@ disable_cass() {
       file_changed $i $md5
     fi
   done
+  patch_prop /vendor/build.prop ro.security.cass.feature 0
 }
 
 disable_proca() {
@@ -399,9 +414,7 @@ fi
 
 if [ $major -gt 9 ]; then
   disable_wsm
-  if echo $device | grep -E 'G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNQ0]|1N)|T860|F90(0[FN]|7[BN])|M[23]15F' >/dev/null; then
-    disable_cass
-  fi
+  disable_cass
 fi
 
 ui_print " - Unmounting /vendor..."

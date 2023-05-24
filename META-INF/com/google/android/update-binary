@@ -91,6 +91,7 @@ rm_from_manifest() {
   for i in /vendor/etc/vintf/manifest.xml \
 	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \
 	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml \
+           /vendor/etc/vintf/manifest/vendor.samsung.hardware.tlc.*.xml \
 	   /vendor/etc/vintf/manifest/wsm_manifest.xml; do
     if [ -f $i ]; then
       ui_print " -   Found $i."
@@ -337,6 +338,27 @@ disable_avb() {
   fi
 }
 
+disable_tlc() {
+  local md5
+  local i
+
+  ui_print " - Removing TLC HDM/ICCC/KG..."
+  # Fully remove those
+  for i in "snap" "ddar" "hdm" "iccc" "blockchain" "ucm" "payment"; do
+    rm_from_manifest $i
+  done
+
+  for i in /vendor/etc/init/vendor.samsung.hardware.tlc.*.rc; do
+    if [ -f $i ]; then
+      ui_print " -   Found $i."
+      md5=$( md5 $i )
+      sed -i -e 's/^[^#].*$/# &/' $i
+      file_changed $i $md5
+    fi
+  done
+  patch_prop /system_root/system/build.prop ro.config.iccc_version iccc_disabled
+}
+
 patch_libbluetooth() {
   [ $major -ne 10 || $major -ge 13 ] && return
 
@@ -447,6 +469,7 @@ disable_proca
 fix_smart_view
 disable_frp
 disable_avb
+disable_tlc
 [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
 
 if [ $major -gt 9 ]; then

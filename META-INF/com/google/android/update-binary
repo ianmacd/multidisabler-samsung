@@ -88,11 +88,7 @@ rm_from_manifest() {
   #
   [ $major -gt 9 ] && local path_extra='\.hardware'
 
-  for i in /vendor/etc/vintf/manifest.xml \
-	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \
-	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml \
-           /vendor/etc/vintf/manifest/vendor.samsung.hardware.tlc.*.xml \
-	   /vendor/etc/vintf/manifest/wsm_manifest.xml; do
+  for i in $2; do
     if [ -f $i ]; then
       ui_print " -   Found $i."
       md5=$( md5 $i )
@@ -202,7 +198,7 @@ disable_vaultkeeper() {
   # will be spammed with messages about failed connections to the Vaultkeeper
   # service.
   #
-  rm_from_manifest vaultkeeper
+  rm_from_manifest vaultkeeper "/vendor/etc/vintf/manifest.xml $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml"
 
   for i in $ANDROID_ROOT/system /vendor; do
     if [ -f $i/bin/vaultkeeperd ]; then
@@ -264,12 +260,12 @@ disable_proca() {
     fi
   done
 
-  rm_from_manifest proca
+  rm_from_manifest proca "/vendor/etc/vintf/manifest.xml"
 }
 
 disable_wsm() {
   ui_print " - Disabling wsm..."
-  rm_from_manifest wsm
+  rm_from_manifest wsm "/vendor/etc/vintf/manifest.xml /vendor/etc/vintf/manifest/wsm_manifest.xml"
 }
 
 disable_recovery_restoration() {
@@ -344,8 +340,11 @@ disable_tlc() {
 
   ui_print " - Removing TLC HDM/ICCC/KG..."
   # Fully remove those
-  for i in "snap" "ddar" "hdm" "iccc" "blockchain" "ucm" "payment"; do
-    rm_from_manifest $i
+  for i in "snap" "ddar" "hdm" "iccc"; do
+    rm_from_manifest $i "/vendor/etc/vintf/manifest/vendor.samsung.hardware.tlc.$i*.xml"
+  done
+  for i in "blockchain" "ucm" "payment"; do
+    rm_from_manifest $i "/vendor/etc/vintf/manifest.xml"
   done
 
   for i in /vendor/etc/init/vendor.samsung.hardware.tlc.*.rc; do
